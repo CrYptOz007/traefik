@@ -1,0 +1,24 @@
+version: "3.9"
+networks:
+  traefik_proxy:
+    external: true
+    name: traefik_proxy
+
+services:
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: always
+    networks:
+      traefik_proxy:
+        aliases:
+          - portainer
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+
+
+volumes:
+  portainer_data:
+    external: true
+    name: portainer_data

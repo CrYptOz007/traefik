@@ -1,0 +1,36 @@
+http:
+  routers:
+    ups-https:
+      rule: "Host(`ups.{{env "DOMAINNAME_CLOUD_SERVER"}}`)"
+      service: ups-service
+      entrypoints:
+        - https
+      middlewares:
+        - chain-whitelist
+      tls:
+        certResolver: dns-cloudflare
+        options: letsencrypt
+    ups-http:
+      rule: "Host(`ups.{{env "DOMAINNAME_CLOUD_SERVER"}}`)"
+      service: ups-service
+      entrypoints:
+        - http
+      middlewares:
+        - chain-whitelist-redirect
+  services:
+    ups-service:
+      failover:
+        service: ups-main-service
+        fallback: ups-backup-service
+    ups-main-service:
+      loadBalancer:
+        healthCheck:
+          path: /api/ping
+          interval: 10s
+          timeout: 3s
+        servers:
+          - url: "http://peanut:8081"
+    ups-backup-service:
+      loadBalancer:
+        servers:
+          - url: "http://REPLACE_HERE:8080"

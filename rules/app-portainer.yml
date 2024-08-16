@@ -1,0 +1,15 @@
+http:
+  routers:
+    portainer-https:
+      rule: "Host(`portainer.{{env "DOMAINNAME_CLOUD_SERVER"}}`)"
+      service: portainer-service
+      entrypoints:
+        - https
+      middlewares:
+        - chain-whitelist
+      tls: {}
+  services:
+    portainer-service:
+      loadBalancer:
+        servers:
+          - url: "https://portainer:9443/"

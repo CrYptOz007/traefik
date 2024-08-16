@@ -1,0 +1,123 @@
+version: "3.9"
+ 
+networks:
+  default:
+    driver: bridge
+  traefik_proxy:
+    name: traefik_proxy
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.1.0/24
+
+########################### EXTENSION FIELDS
+# Helps eliminate repetition of sections
+# More Info on how to use this: https://github.com/htpcBeginner/docker-traefik/pull/228
+ 
+# Common environment values
+x-environment: &default-tz-puid-pgid
+  TZ: $TZ
+  PUID: $PUID
+  PGID: $PGID
+ 
+# Keys common to some of the core services that we always to automatically restart on failure
+x-common-keys-core: &common-keys-core
+  networks:
+    - traefik_proxy
+  security_opt:
+    - no-new-privileges:true
+  restart: always
+ 
+# Keys common to some of the dependent services/apps
+x-common-keys-apps: &common-keys-apps
+  networks:
+    - traefik_proxy
+  security_opt:
+    - no-new-privileges:true
+  restart: unless-stopped
+ 
+# Keys common to some of the services in media-services.txt
+x-common-keys-media: &common-keys-media
+  networks:
+    - traefik_proxy
+  security_opt:
+    - no-new-privileges:true
+  restart: "no"
+
+secrets:
+  rsa_private_key:
+    file: $DOCKERDIR/certs/$DOMAINNAME_CLOUD_SERVER.key
+  rsa_cert:
+    file: $DOCKERDIR/certs/$DOMAINNAME_CLOUD_SERVER.pem
+  rsa_origin_pull:
+    file: $DOCKERDIR/certs/authenticated_origin_pull_ca.pem
+  htpasswd:
+    file: $DOCKERDIR/secrets/.htpasswd
+configs:
+  traefik_config:
+    file: $DOCKERDIR/config/traefik.yml
+
+########################### SERVICES
+services: 
+  ############################# FRONTENDS
+  # Traefik 2 - Reverse Proxy
+  traefik:
+    <<: *common-keys-core # See EXTENSION FIELDS at the top
+    container_name: traefik
+    image: traefik:latest
+    environment:
+      - CF_API_EMAIL=$CLOUDFLARE_EMAIL
+      - CF_API_KEY=$CLOUDFLARE_API_KEY
+      - DOMAINNAME_CLOUD_SERVER
+      - TRAEFIK_CERTIFICATESRESOLVERS_dns-cloudflare_ACME_EMAIL=$CLOUDFLARE_EMAIL
+      - TRAEFIK_ENTRYPOINTS_https_FORWARDEDHEADERS_TRUSTEDIPS=$WAN_IP,$LOCAL_IPS,$CLOUDFLARE_IPS
+      - WAN_IP
+      - LOCAL_IPS
+      - CLOUDFLARE_IPS
+    ports:
+      - target: 443
+        published: 443
+        protocol: tcp
+        mode: host
+      - target: 80
+        published: 80
+        protocol: tcp
+        mode: host
+    networks:
+      traefik_proxy:
+        ipv4_address: 172.20.1.254
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro # If you use Docker Socket Proxy, comment this line out
+      - $DOCKERDIR/rules:/rules
+      - $DOCKERDIR/logs:/logs
+      - $DOCKERDIR/shared:/shared
+      - $DOCKERDIR/secrets/acme.json:/acme.json:rw
+    command:
+      - --configFile=/etc/traefik/traefik.yml
+    secrets:
+      - source: rsa_private_key
+        target: /etc/certs/server.key
+      - source: rsa_origin_pull
+        target: /etc/certs/authenticated_origin_pull_ca.pem
+      - source: rsa_cert
+        target: /etc/certs/server.pem
+      - source: htpasswd
+        target: /secrets/.htpasswd
+    configs:
+      - source: traefik_config
+        target: /etc/traefik/traefik.yml
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik_proxy"
+      # HTTP-to-HTTPS Redirect
+      - "traefik.http.routers.http-catchall.entrypoints=http"
+      - "traefik.http.routers.http-catchall.rule=HostRegexp(`{host:.+}`)"
+      - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.routers.traefik.entrypoints=https"
+      - "traefik.http.routers.traefik.tls=true" # Some people had 404s without this
+      - "traefik.http.routers.traefik.rule=Host(`traefik.$DOMAINNAME_CLOUD_SERVER`)"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.services.traefik.loadbalancer.server.port=443"
+      - "traefik.http.routers.traefik.middlewares=chain-basic-auth-whitelist@file"
+      - "traefik.http.middlewares.default-ip-whitelist.ipallowlist.sourcerange=$WAN_IP,$LOCAL_IPS,$CLOUDFLARE_IPS

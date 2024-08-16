@@ -1,0 +1,30 @@
+http:
+  middlewares:
+    chain-basic-auth-whitelist:
+      chain:
+        middlewares:
+          - default-headers
+          - basic-auth
+          - compress-gzip
+          - default-ip-whitelist@docker
+
+    chain-whitelist:
+      chain:
+        middlewares:
+          - default-headers
+          - compress-gzip
+          - default-ip-whitelist@docker
+
+    chain-nowhitelist:
+      chain:
+        middlewares:
+          - default-headers
+          - compress-gzip
+    
+    chain-whitelist-redirect:
+      chain:
+        middlewares:
+          - https-redirectscheme
+          - default-headers
+          - compress-gzip
+          - default-ip-whitelist@docker

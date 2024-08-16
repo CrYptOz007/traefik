@@ -1,0 +1,18 @@
+http:
+  routers:
+    truenas-https:
+      rule: "Host(`nas.{{env "DOMAINNAME_CLOUD_SERVER"}}`)"
+      service: truenas-service
+      entrypoints:
+        - https
+      middlewares:
+        - chain-whitelist
+      tls:
+        domains:
+          - main: "Host(`nas.{{env "DOMAINNAME_CLOUD_SERVER"}}`)"
+  services:
+    truenas-service:
+      loadBalancer:
+        servers:
+          - url: "https://REPLACE_HERE"
+

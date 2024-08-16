@@ -1,0 +1,16 @@
+http:
+  routers:
+    unifi-https:
+      rule: "Host(`unifi.{{env "DOMAINNAME_CLOUD_SERVER"}}`)"
+      service: unifi-service
+      entrypoints:
+        - https
+      middlewares:
+        - chain-whitelist
+      tls: {}
+  services:
+    unifi-service:
+      loadBalancer:
+        servers:
+          - url: "https://REPLACE_HERE:443"
+

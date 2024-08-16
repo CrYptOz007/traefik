@@ -1,0 +1,61 @@
+global:
+  sendAnonymousUsage: true
+  checkNewVersion: true
+
+log:
+  filePath: "/logs/traefik.log"
+  level: debug
+  format: json
+  maxSize: 100
+
+accessLog:
+  filePath: "/logs/access.log"
+  format: json
+  bufferingSize: 0
+  fields:
+    headers:
+      defaultMode: keep
+      names:
+        User-Agent: redact
+        Authorization: drop
+        Content-Type: keep
+
+api:
+  dashboard: true
+
+serversTransport:
+  insecureSkipVerify: true
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    network: traefik_proxy
+  file:
+    directory: "/rules"
+    watch: true
+
+certificatesResolvers:
+  dns-cloudflare:
+    acme:
+      caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
+      storage: acme.json
+      dnsChallenge:
+        provider: cloudflare
+        resolvers: 1.1.1.1:53
+        # delayBeforeCheck: 90
+
+entryPoints:
+  http:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: https
+          scheme: https
+          permanent: true
+  https:
+    http3: {}
+    address: ":443"
+    http:
+      tls: {}

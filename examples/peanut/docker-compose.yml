@@ -1,0 +1,23 @@
+version: "3.9"
+networks:
+  traefik_proxy:
+    external: true
+    name: traefik_proxy
+
+services:
+  peanut:
+    image: brandawg93/peanut:latest
+    container_name: PeaNUT
+    restart: unless-stopped
+    ports:
+      - 8081:8081
+    environment:
+      - NUT_HOST=
+      - NUT_PORT=3493
+      - WEB_PORT=8081
+      - USERNAME
+      - PASSWORD
+    networks:
+      traefik_proxy:
+        aliases:
+          - peanut

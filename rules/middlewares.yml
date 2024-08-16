@@ -1,0 +1,40 @@
+http:
+  middlewares:
+    compress-gzip:
+      compress: {}
+    limit:
+      buffering:
+        maxRequestBodyBytes: 200000000
+        maxResponseBodyBytes: 200000000
+        memRequestBodyBytes: 200000000
+        memResponseBodyBytes: 200000000
+    addprefix-pihole:
+      addPrefix:
+        prefix: "/admin"
+    default-headers:
+      headers:
+        frameDeny: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 15552000
+        customFrameOptionsValue: SAMEORIGIN
+        referrerPolicy: "strict-origin-when-cross-origin"
+        customRequestHeaders:
+          X-Forwarded-Proto: https
+        customResponseHeaders:
+          X-Robots-Tag: "none,noarchive,nosnippet,notranslate,noimageindex"
+          server: ""
+          X-Forwarded-Proto: "https,wss"
+        hostsProxyHeaders:
+          - "X-Forwarded-Host"
+    basic-auth:
+      basicAuth:
+        usersFile: "/secrets/.htpasswd" # be sure to mount the volume through docker-compose.yml
+        realm: "Traefik 2 Basic Auth"
+    https-redirectscheme:
+      redirectscheme:
+        scheme: https
+        permanent: true

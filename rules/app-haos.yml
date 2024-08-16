@@ -1,0 +1,34 @@
+http:
+  routers:
+    haos-https:
+      rule: "Host(`haos.{{env "DOMAINNAME_CLOUD_SERVER"}}`)"
+      priority: 98
+      service: haos-service
+      entrypoints:
+        - https
+      middlewares:
+        - chain-whitelist
+      tls: {}
+    haos-https-no-auth:
+      rule: "Host(`haos.{{env "DOMAINNAME_CLOUD_SERVER"}}`) && PathPrefix(`/api`) || PathPrefix(`/auth`) || PathPrefix(`/hacsfiles`)"
+      priority: 99
+      service: haos-service
+      entrypoints:
+        - https
+      middlewares:
+        - chain-whitelist
+      tls: {}
+    haos-https-websocket-no-auth:
+      rule: "Host(`haos.{{env "DOMAINNAME_CLOUD_SERVER"}}`) && PathPrefix(`/api/websocket`)"
+      priority: 100
+      service: haos-service
+      entrypoints:
+        - https
+      middlewares:
+        - chain-whitelist
+      tls: {}
+  services:
+    haos-service:
+      loadBalancer:
+        servers:
+          - url: "https://REPLACE_HERE:8123/"
