@@ -3,7 +3,7 @@
 
 Traefik 3 Docker compose instance that enables auto generation of SSL certificates via letsencrypt and assignment of DNS records for any web application with Cloudflare. 
 
-## Setup
+## Initial Setup
 
 To setup this project.
 
@@ -52,7 +52,7 @@ CLOUDFLARE_API_KEY=
 WAN_IP= #EXAMPLE 100.100.100.100/32
 ```
 
-## Cloudflare
+## Cloudflare Setup
 A domain is needed that's linked to Cloudflare by pointing the Nameservers
 
 1. Obtain the Global API Key in My Profile > API Tokens and place in the .env file for `CLOUDFLARE_API_KEY`
@@ -89,3 +89,9 @@ chmod 600 certs/*.pem
 5. SSL/TLS > Edge Certificates - TLS 1.3 `Checked`
 6. SSL/TLS > Edge Certificates - Automatic HTTPS Rewrites `Checked`
 7. SSL/TLS > Origin Server - Authenticated Origin Pulls `Checked`
+
+## Dashboard
+
+The dashboard for traefik can be accessed via `traefik.YOURDOMAIN` once you've completed all the configuration steps.
+
+The default password is `admin:admin`. You can set your own BASIC AUTH usernmae and password via the `secrets/.htpasswd` file.
