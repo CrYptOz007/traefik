@@ -1,6 +1,8 @@
 
 # Traefik 3
 
+Traefik 3 Docker compose instance that enables auto generation of SSL certificates via letsencrypt and assignment of DNS records for any web application with Cloudflare. 
+
 ## Setup
 
 To setup this project.
