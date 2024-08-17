@@ -20,6 +20,24 @@ chmod 600 .env
 ```bash
 rules/app-*.yml
 ```
+
+Some examples have already been given. `REPLACE_HERE` requires you to replace it with either the application's internal IP/Port on your network or the docker's instance alias name if it's running on the same `traefik_proxy` network. See `examples/portainer` and `app-portainer-yml` for setting up docker instances on the same network with traefik
+
+Services that allow you to upload your own SSL Certificate (manually generating one through Cloudflare's Origin Server), you can set the option
+```yml
+      tls: {}
+```
+For services that don't have the ability to have an SSL certificate such as those not running via NGINX, ensure
+
+```yaml
+      tls:
+        certResolver: dns-cloudflare
+        options: letsencrypt
+```
+is set for the service to allow certificates to be auto generated for the hostname using letsencrypt.
+
+4. Port forward `443/TCP` to your traefik's instance IP
+
 ## Environment Variables
 
 To run this project, you will need to change the following environment variables to your `.env` file after you make a copy from `.env.example`
@@ -53,3 +71,19 @@ curl --ouput certs/authenticated_origin_pull_ca.pem https://developers.cloudflar
 chmod 644 certs/*.pem
 chmod 600 certs/*.pem
 ```
+
+7. Go to the site's domain dashboard again and go to DNS > Records
+
+8. Add an A Record with `@` for Name and your WAN IP as the `IPv4`. Ensure `Proxy status` is checked
+
+9. Add a CNAME Record with `*` for Name and your domain for target. Ensure `Proxy status is checked
+
+### Recommended Options
+
+1. SSL/TLS > Overview - Encryption Mode `Full`
+2. SSL/TLS > Edge Certificates - Always Use HTTPS `Checked`
+3. SSL/TLS > Edge Certificates - Minimum TLS Version - `TLS 1.2`
+4. SSL/TLS > Edge Certificates - Opportunistic Encryption `Checked`
+5. SSL/TLS > Edge Certificates - TLS 1.3 `Checked`
+6. SSL/TLS > Edge Certificates - Automatic HTTPS Rewrites `Checked`
+7. SSL/TLS > Origin Server - Authenticated Origin Pulls `Checked`
