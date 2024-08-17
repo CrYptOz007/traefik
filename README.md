@@ -78,7 +78,7 @@ chmod 600 certs/*.pem
 
 8. Add an A Record with `@` for Name and your WAN IP as the `IPv4`. Ensure `Proxy status` is checked
 
-9. Add a CNAME Record with `*` for Name and your domain for target. Ensure `Proxy status is checked
+9. Add a CNAME Record with `*` for Name and your domain for target. Ensure `Proxy status` is checked
 
 ### Recommended Options
 
