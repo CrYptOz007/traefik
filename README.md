@@ -61,7 +61,7 @@ A domain is needed that's linked to Cloudflare by pointing the Nameservers
 
 3. Click `Create Certificate` and leave the default settings
 
-4. Create the certificate and private key in `certs` folder called `DOMAIN.pem` and `DOMAIN.key` which corresponds to the certificate and private key generated from creating the certificate
+4. Create the certificate and private key in `certs` folder called `YOUR_DOMAIN.TLD.pem` and `YOUR_DOMAIN.TLD.key` which corresponds to the certificate and private key generated from creating the certificate
 
 5. Download the authenticated pull certificate into certs.
 ```bash
@@ -92,6 +92,6 @@ chmod 600 certs/*.pem
 
 ## Dashboard
 
-The dashboard for traefik can be accessed via `traefik.YOURDOMAIN` once you've completed all the configuration steps.
+The dashboard for traefik can be accessed via `traefik.YOUR_DOMAIN.TLD` once you've completed all the configuration steps.
 
 The default password is `admin:admin`. You can set your own BASIC AUTH usernmae and password via the `secrets/.htpasswd` file.
